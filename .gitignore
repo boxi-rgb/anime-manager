@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.py
+debug_empty.png
+anime_app_favicon_*.png
+prime_original.png
+# Keep JSON if it's used as initial data, but script.js seems to fetch live.
+# anime_data.json

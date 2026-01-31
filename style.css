@@ -1,0 +1,615 @@
+:root {
+    /* Base Variables (Default: Midnight) */
+    --bg-color: #080a0f;
+    --text-color: #eee;
+    --accent-color: #00f2ff;
+    --accent-hover: #00c8d4;
+    --success-color: #00ff88;
+    --score-color: #ffcc00;
+    --drop-color: #ff4444;
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --input-bg: #111;
+    --input-border: #333;
+    --heading-gradient: linear-gradient(90deg, #00f2ff, #7d00ff);
+    --card-shadow: none;
+    --font-head: 'Outfit', sans-serif;
+}
+
+/* Theme: Snow (Light) */
+[data-theme="snow"] {
+    --bg-color: #f0f2f5;
+    --text-color: #333;
+    --accent-color: #007bff;
+    --accent-hover: #0056b3;
+    --success-color: #28a745;
+    --score-color: #e6b800;
+    --drop-color: #dc3545;
+    --glass-bg: #ffffff;
+    --glass-border: #ddd;
+    --input-bg: #fff;
+    --input-border: #ccc;
+    --heading-gradient: linear-gradient(90deg, #007bff, #00c6ff);
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Theme: Cyber (Neon) */
+[data-theme="cyber"] {
+    --bg-color: #000000;
+    --text-color: #0f0;
+    --accent-color: #f0f;
+    --accent-hover: #d09;
+    --success-color: #0f0;
+    --score-color: #ff0;
+    --drop-color: #f00;
+    --glass-bg: rgba(0, 255, 0, 0.04);
+    --glass-border: #0f0;
+    --input-bg: #000;
+    --input-border: #0f0;
+    --heading-gradient: linear-gradient(90deg, #f0f, #0ff);
+    --card-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+    --font-head: 'Courier New', monospace;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-head), 'Noto Sans JP', sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+header {
+    width: 100%;
+    max-width: 950px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 15px;
+    transition: border-color 0.3s;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+h1 {
+    font-size: 1.8rem;
+    margin: 0;
+    background: var(--heading-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Season Selector Panel */
+.season-selector {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    transition: all 0.3s;
+    box-shadow: var(--card-shadow);
+}
+
+.selector-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.date-input {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    padding: 6px 8px;
+    border-radius: 4px;
+    width: 70px;
+    font-family: inherit;
+    transition: all 0.3s;
+}
+
+.season-select {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.fetch-btn {
+    background: var(--heading-gradient);
+    /* Use gradient for consistency */
+    border: none;
+    color: #fff;
+    /* White text usually works on vibrant gradients */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    font-weight: 700;
+    padding: 7px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: auto;
+    transition: opacity 0.2s;
+}
+
+[data-theme="snow"] .fetch-btn {
+    color: #fff;
+    text-shadow: none;
+}
+
+[data-theme="cyber"] .fetch-btn {
+    border: 1px solid var(--accent-color);
+    background: black;
+    color: var(--accent-color);
+    text-shadow: 0 0 5px var(--accent-color);
+}
+
+[data-theme="cyber"] .fetch-btn:hover {
+    background: var(--accent-color);
+    color: black;
+}
+
+.fetch-btn:hover {
+    opacity: 0.9;
+}
+
+.fetch-btn:disabled {
+    background: #555;
+    color: #888;
+    cursor: not-allowed;
+    border: none;
+}
+
+.controls-area {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    /* Added border for visibility in light mode */
+    border-radius: 8px;
+    padding: 4px;
+    transition: all 0.3s;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    opacity: 0.6;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 700;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+.tab-btn.active {
+    background: var(--glass-border);
+    /* Use border color as active background for contrast */
+    opacity: 1;
+    color: var(--text-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="snow"] .tab-btn.active {
+    background: #fff;
+    color: var(--accent-color);
+    border: 1px solid #ddd;
+}
+
+[data-theme="cyber"] .tab-btn.active {
+    background: var(--accent-color);
+    color: #000;
+}
+
+.tab-btn:hover:not(.active) {
+    opacity: 1;
+}
+
+/* Sort & Options */
+.options-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+select {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.toggle-label {
+    font-size: 0.8rem;
+    color: var(--text-color);
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.toggle-label:hover {
+    opacity: 1;
+}
+
+.status-text {
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    margin-left: auto;
+}
+
+/* Anime List */
+.list-container {
+    width: 100%;
+    max-width: 950px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.anime-item {
+    display: flex;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 140px;
+    height: auto;
+    position: relative;
+    box-shadow: var(--card-shadow);
+}
+
+.anime-item:hover {
+    border-color: var(--accent-color);
+    transform: translateX(5px);
+}
+
+[data-theme="snow"] .anime-item:hover {
+    background: #fff;
+}
+
+/* Status Visuals */
+.anime-item.status-watched {
+    border-left: 4px solid var(--success-color);
+    opacity: 0.6;
+    filter: grayscale(0.6);
+}
+
+.anime-item.status-watched:hover {
+    opacity: 0.9;
+    filter: grayscale(0);
+}
+
+.anime-item.status-dropped {
+    opacity: 0.3;
+    filter: grayscale(1);
+    height: 60px;
+    min-height: 60px;
+    /* Collapsed view */
+}
+
+.anime-item.status-dropped .img-box {
+    width: 50px;
+    min-width: 50px;
+}
+
+.anime-item.status-dropped .summary {
+    display: none;
+}
+
+.anime-item.status-dropped .meta-row {
+    display: none;
+}
+
+.anime-item.status-dropped:hover {
+    opacity: 1;
+    filter: grayscale(0);
+    height: 140px;
+}
+
+.anime-item.status-dropped:hover .img-box {
+    width: 100px;
+    min-width: 100px;
+}
+
+.anime-item.status-dropped:hover .summary,
+.anime-item.status-dropped:hover .meta-row {
+    display: flex;
+    display: -webkit-box;
+}
+
+.img-box {
+    width: 100px;
+    min-width: 100px;
+    position: relative;
+    transition: all 0.3s;
+}
+
+.img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.info-box {
+    padding: 12px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-color);
+}
+
+.meta-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.score-badge {
+    font-size: 0.75rem;
+    color: var(--score-color);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--score-color);
+    /* Added border for clarity */
+}
+
+.ep-count {
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    font-weight: 700;
+}
+
+.date-range {
+    font-size: 0.75rem;
+    color: var(--text-color);
+    opacity: 0.7;
+    margin-right: 5px;
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+.genre {
+    font-size: 0.7rem;
+    color: var(--text-color);
+    opacity: 0.7;
+    background: var(--glass-border);
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+
+.summary {
+    font-size: 0.85rem;
+    color: var(--text-color);
+    opacity: 0.8;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.action-box {
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 10px;
+}
+
+/* VOD Buttons */
+.vod-links {
+    display: flex;
+    gap: 10px;
+}
+
+.vod-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    /* Rely on the image itself */
+    border: none;
+    /* Remove border for icon-only look */
+    opacity: 0.9;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+    padding: 0;
+    overflow: hidden;
+}
+
+.vod-btn img {
+    width: 100%;
+    height: 100%;
+    /* Fill the button */
+    border-radius: 8px;
+    /* Match button radius */
+}
+
+.vod-btn.prime img {
+    object-fit: cover;
+    /* Square App Icon - fill area */
+}
+
+.vod-btn.netflix img {
+    object-fit: cover;
+    /* Square N Logo - fill area */
+}
+
+.vod-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    opacity: 1;
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Play Button (YouTube) */
+.play-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    /* Circle for YouTube */
+    border: none;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 6px;
+    margin-right: -4px;
+    opacity: 0.9;
+}
+
+.play-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Keep rect aspect ratio inside circle */
+}
+
+.play-btn:hover {
+    transform: scale(1.1);
+    opacity: 1;
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.play-btn:disabled {
+    opacity: 0.3;
+    filter: grayscale(1);
+    cursor: default;
+    transform: none;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: #000;
+    width: 90%;
+    max-width: 800px;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--glass-border);
+}
+
+.modal-close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    opacity: 0.8;
+}
+
+.modal-close:hover {
+    opacity: 1;
+}
+
+.modal-fallback {
+    text-align: center;
+    padding: 15px;
+}
+
+.fallback-btn {
+    display: inline-block;
+    background-color: #ff0000;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
+}
+
+.fallback-btn:hover {
+    background-color: #cc0000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.5);
+}
