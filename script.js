@@ -611,7 +611,9 @@ function render() {
         const droppedActive = status === 'DROPPED' ? 'active-dropped' : '';
 
         const html = `
-        <div class="${itemClass}" style="--item-bg: url('${anime.coverImage.large}')">
+        <div class="${itemClass}" 
+             onmouseenter="setGlobalBg('${anime.coverImage.large}')" 
+             onmouseleave="clearGlobalBg()">
             ${badgeHtml}
             <div class="img-box">
                 <img src="${anime.coverImage.large}" loading="lazy" alt="cover">
@@ -653,6 +655,21 @@ function render() {
         `;
         root.insertAdjacentHTML('beforeend', html);
     });
+}
+
+function setGlobalBg(url) {
+    const bg = document.getElementById('global-bg-overlay');
+    if (bg) {
+        bg.style.backgroundImage = `url('${url}')`;
+        bg.classList.add('active');
+    }
+}
+
+function clearGlobalBg() {
+    const bg = document.getElementById('global-bg-overlay');
+    if (bg) {
+        bg.classList.remove('active');
+    }
 }
 
 init();
