@@ -611,7 +611,7 @@ function render() {
         const droppedActive = status === 'DROPPED' ? 'active-dropped' : '';
 
         const html = `
-        <div class="${itemClass}">
+        <div class="${itemClass}" style="--item-bg: url('${anime.coverImage.large}')">
             ${badgeHtml}
             <div class="img-box">
                 <img src="${anime.coverImage.large}" loading="lazy" alt="cover">
