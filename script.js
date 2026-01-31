@@ -658,17 +658,22 @@ function render() {
 }
 
 function setGlobalBg(url) {
-    const bg = document.getElementById('global-bg-overlay');
-    if (bg) {
-        bg.style.backgroundImage = `url('${url}')`;
-        bg.classList.add('active');
+    const left = document.getElementById('bg-left');
+    const right = document.getElementById('bg-right');
+    if (left && right) {
+        left.style.backgroundImage = `url('${url}')`;
+        right.style.backgroundImage = `url('${url}')`;
+        left.classList.add('active');
+        right.classList.add('active');
     }
 }
 
 function clearGlobalBg() {
-    const bg = document.getElementById('global-bg-overlay');
-    if (bg) {
-        bg.classList.remove('active');
+    const left = document.getElementById('bg-left');
+    const right = document.getElementById('bg-right');
+    if (left && right) {
+        left.classList.remove('active');
+        right.classList.remove('active');
     }
 }
 

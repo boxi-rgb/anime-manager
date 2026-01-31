@@ -291,23 +291,48 @@ select {
     z-index: 1;
 }
 
-#global-bg-overlay {
+.bg-side {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
+    top: 120px;
+    bottom: 40px;
+    width: calc((100vw - 1100px) / 2);
+    min-width: 100px;
+    max-width: 400px;
+    background-size: contain;
+    background-repeat: no-repeat;
     background-position: center;
-    filter: brightness(0.15);
     opacity: 0;
-    transition: opacity 0.5s ease;
-    z-index: -10;
+    transition: opacity 0.4s ease;
+    z-index: -1;
     pointer-events: none;
+    filter: brightness(0.6);
+    /* 目に優しく、かつ何かわかる明るさ */
 }
 
-#global-bg-overlay.active {
-    opacity: 0.6;
+#bg-left {
+    left: 40px;
+}
+
+#bg-right {
+    right: 40px;
+}
+
+.bg-side.active {
+    opacity: 1;
+}
+
+@media (max-width: 1400px) {
+    .bg-side {
+        width: calc((100vw - 1000px) / 2);
+        left: 10px !important;
+        right: 10px !important;
+    }
+}
+
+@media (max-width: 1100px) {
+    .bg-side {
+        display: none;
+    }
 }
 
 .anime-item:hover {
