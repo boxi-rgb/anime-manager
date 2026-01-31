@@ -301,7 +301,7 @@ select {
     background-image: var(--item-bg);
     background-size: cover;
     background-position: center;
-    filter: blur(20px) brightness(0.3);
+    filter: blur(20px) brightness(0.5);
     opacity: 0;
     transition: opacity 0.4s ease;
     z-index: -1;
@@ -309,7 +309,7 @@ select {
 }
 
 .anime-item:hover::before {
-    opacity: 0.4;
+    opacity: 0.6;
 }
 
 .anime-item:hover {
