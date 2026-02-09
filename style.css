@@ -611,7 +611,7 @@ select {
     background: #000;
     width: 90%;
     max-width: 800px;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: auto;
     border-radius: 12px;
     overflow: hidden;
     position: relative;
@@ -657,4 +657,113 @@ select {
     background-color: #cc0000;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 0, 0, 0.5);
+}
+/* Settings Modal */
+.settings-modal-content {
+    background: var(--bg-color);
+    width: 90%;
+    max-width: 500px;
+    height: auto;
+    aspect-ratio: auto;
+    padding: 30px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+    color: var(--text-color);
+}
+
+.settings-modal-content h2 {
+    margin-top: 0;
+    color: var(--accent-color);
+    font-size: 1.5rem;
+}
+
+.settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.settings-group label {
+    font-weight: bold;
+    color: var(--accent-color);
+    font-size: 0.9rem;
+}
+
+.settings-group input {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-color);
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.settings-group .hint {
+    font-size: 0.8rem;
+    color: var(--text-color);
+    opacity: 0.7;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.settings-group .hint a {
+    color: var(--accent-color);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--accent-color);
+}
+
+.settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.save-btn {
+    background: var(--heading-gradient);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+}
+
+.save-btn:hover {
+    opacity: 0.9;
+}
+
+.settings-btn {
+    font-size: 1.2rem;
+    width: 40px !important;
+    height: 40px !important;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-color);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.settings-btn:hover {
+    background: var(--glass-border);
+    color: var(--accent-color);
+}
+
+/* Video Modal Mode */
+.modal-content.video-mode {
+    aspect-ratio: 16 / 9;
+    background: #000;
+    width: 90%;
+    max-width: 800px;
 }

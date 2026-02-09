@@ -1,7 +1,7 @@
 // --- Configuration ---
 const ANILIST_API_URL = 'https://graphql.anilist.co';
 const ANNICT_API_URL = 'https://api.annict.com/v1/works';
-const ANNICT_TOKEN = 'KEgdY8ZMjgK3kr5zofuAk6yVrtn7JaRknneSHZLjjow'; // Provided by User
+let ANNICT_TOKEN = localStorage.getItem('annictToken') || ''; // Provided by User
 
 // --- State ---
 let allAnime = [];
@@ -84,7 +84,7 @@ function openModal(videoId) {
 
     const fallbackLink = modal.querySelector('#fallback-link');
     fallbackLink.href = `https://www.youtube.com/watch?v=${videoId}`;
-    modal.classList.add('active');
+    modal.classList.add('active'); const c = modal.querySelector('.modal-content'); if(c) c.classList.add('video-mode');
 
     const container = modal.querySelector('#player-container');
 
@@ -120,7 +120,7 @@ function openModal(videoId) {
 function closeModal() {
     const modal = document.getElementById('pv-modal');
     if (modal) {
-        modal.classList.remove('active');
+        modal.classList.remove('active'); const c = modal.querySelector('.modal-content'); if(c) c.classList.remove('video-mode');
         if (ytPlayer && ytPlayer.stopVideo) {
             try { ytPlayer.stopVideo(); } catch (e) { }
         }
@@ -678,3 +678,35 @@ function clearGlobalBg() {
 }
 
 init();
+
+// --- Settings Modal Logic ---
+function openSettings() {
+    const modal = document.getElementById('settings-modal');
+    const input = document.getElementById('annict-token-input');
+    if (modal && input) {
+        input.value = ANNICT_TOKEN;
+        modal.classList.add('active');
+
+        // Close on background click
+        modal.onclick = (e) => {
+            if (e.target === modal) closeSettings();
+        };
+    }
+}
+
+function closeSettings() {
+    const modal = document.getElementById('settings-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+function saveSettings() {
+    const input = document.getElementById('annict-token-input');
+    if (input) {
+        const token = input.value.trim();
+        localStorage.setItem('annictToken', token);
+        ANNICT_TOKEN = token;
+        closeSettings();
+        showToast("設定を保存しました。リロードします...");
+        setTimeout(() => location.reload(), 800);
+    }
+}

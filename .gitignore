@@ -32,3 +32,5 @@ anime_app_favicon_*.png
 prime_original.png
 # Keep JSON if it's used as initial data, but script.js seems to fetch live.
 # anime_data.json
+node_modules/
+server.log
