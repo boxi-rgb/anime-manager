@@ -26,29 +26,63 @@ function addDebug(name, info) {
 function showDebugModal() {
     const failures = allAnime.filter(a => !a.description_jp);
     const msg = failures.map(a =>
-        `❌ ${a.title.native || a.title.english}\n   WikiKey: ${a._wikiTitle || 'N/A'}\n   Fallback: ${a._fallbackTitle || 'N/A'}`
+        `❌ ${a.title.native || a.title.english}
+   WikiKey: ${a._wikiTitle || 'N/A'}
+   Fallback: ${a._fallbackTitle || 'N/A'}`
     ).join('\n\n');
 
-    // Output to a dedicated div for automation tools to read easily
-    let debugContainer = document.getElementById('debug-output-container');
-    if (!debugContainer) {
-        debugContainer = document.createElement('pre');
-        debugContainer.id = 'debug-output-container';
-        debugContainer.style.background = '#000';
-        debugContainer.style.color = '#0f0';
-        debugContainer.style.padding = '10px';
-        debugContainer.style.position = 'fixed';
-        debugContainer.style.bottom = '0';
-        debugContainer.style.left = '0';
-        debugContainer.style.right = '0';
-        debugContainer.style.height = '300px';
-        debugContainer.style.overflow = 'auto';
-        debugContainer.style.zIndex = '9999';
-        document.body.appendChild(debugContainer);
-    }
-    debugContainer.textContent = `【未取得リスト: ${failures.length}件】\n\n${msg}`;
-}
+    let container = document.getElementById('debug-modal-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'debug-modal-container';
+        Object.assign(container.style, {
+            position: 'fixed', top: '10%', left: '10%', width: '80%', height: '80%',
+            background: '#000', color: '#0f0', zIndex: '10000',
+            border: '2px solid #333', display: 'flex', flexDirection: 'column',
+            boxShadow: '0 0 20px rgba(0,255,0,0.2)'
+        });
 
+        const header = document.createElement('div');
+        Object.assign(header.style, {
+            padding: '10px', background: '#111', borderBottom: '1px solid #333',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+        });
+
+        const title = document.createElement('span');
+        title.textContent = 'Debug Output';
+        title.style.fontWeight = 'bold';
+
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '✕ Close';
+        Object.assign(closeBtn.style, {
+            background: '#333', color: '#fff', border: 'none',
+            padding: '5px 10px', cursor: 'pointer'
+        });
+        closeBtn.onclick = () => container.remove();
+
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+
+        const body = document.createElement('pre');
+        body.id = 'debug-modal-body';
+        Object.assign(body.style, {
+            flex: '1', overflow: 'auto', padding: '10px', margin: '0',
+            whiteSpace: 'pre-wrap', fontFamily: 'monospace'
+        });
+
+        container.appendChild(header);
+        container.appendChild(body);
+        document.body.appendChild(container);
+    } else {
+        // Ensure it is visible/re-appended if needed (simple toggle logic usually removes it)
+        if (!document.body.contains(container)) document.body.appendChild(container);
+    }
+
+    const body = container.querySelector('#debug-modal-body');
+    if (body) body.textContent = `【未取得リスト: ${failures.length}件】
+
+${msg}`;
+}
 
 // --- Modal Logic ---
 let ytPlayer = null;
@@ -84,7 +118,7 @@ function openModal(videoId) {
 
     const fallbackLink = modal.querySelector('#fallback-link');
     fallbackLink.href = `https://www.youtube.com/watch?v=${videoId}`;
-    modal.classList.add('active'); const c = modal.querySelector('.modal-content'); if(c) c.classList.add('video-mode');
+    modal.classList.add('active');
 
     const container = modal.querySelector('#player-container');
 
@@ -120,7 +154,7 @@ function openModal(videoId) {
 function closeModal() {
     const modal = document.getElementById('pv-modal');
     if (modal) {
-        modal.classList.remove('active'); const c = modal.querySelector('.modal-content'); if(c) c.classList.remove('video-mode');
+        modal.classList.remove('active');
         if (ytPlayer && ytPlayer.stopVideo) {
             try { ytPlayer.stopVideo(); } catch (e) { }
         }
