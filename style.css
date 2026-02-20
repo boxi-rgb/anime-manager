@@ -451,8 +451,34 @@ select {
     display: flex;
     align-items: center;
     gap: 4px;
-    border: 1px solid var(--score-color);
     /* Added border for clarity */
+}
+
+.format-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--glass-border);
+    color: var(--text-color);
+}
+
+.format-badge.format-MOVIE {
+    background: #df2020;
+    color: #fff;
+}
+
+.format-badge.format-TV,
+.format-badge.format-TV_SHORT {
+    background: #007bff;
+    color: #fff;
+}
+
+.format-badge.format-OVA,
+.format-badge.format-ONA,
+.format-badge.format-SPECIAL {
+    background: #8a2be2;
+    color: #fff;
 }
 
 .ep-count {

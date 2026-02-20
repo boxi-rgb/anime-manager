@@ -447,6 +447,7 @@ async function fetchSeason(season, year, includeAiring) {
             media (season: $season, seasonYear: $seasonYear, status: $status, type: ANIME, sort: POPULARITY_DESC, isAdult: false) {
                 id
                 title { romaji english native }
+                format
                 genres
                 averageScore
                 description(asHtml: false)
@@ -775,6 +776,11 @@ function setFilter(filter) {
     document.getElementById(`tab-${filter}`).classList.add('active');
     render();
 }
+
+let currentFormatFilter = 'ALL';
+function setFormatFilter(format) { currentFormatFilter = format; render(); }
+window.setFormatFilter = setFormatFilter;
+
 function setSort(sort) { currentSort = sort; render(); }
 function toggleKidsFilter(checked) { hideKids = checked; render(); }
 
@@ -783,6 +789,12 @@ function render() {
     let displayList = allAnime.filter(anime => {
         const status = getStatus(anime.id);
         if (hideKids && anime.genres.includes('Kids')) return false;
+
+        // Format filtering
+        if (currentFormatFilter === 'TV' && anime.format !== 'TV' && anime.format !== 'TV_SHORT') return false;
+        if (currentFormatFilter === 'MOVIE' && anime.format !== 'MOVIE') return false;
+        if (currentFormatFilter === 'OTHER' && ['TV', 'TV_SHORT', 'MOVIE'].includes(anime.format)) return false;
+
         if (currentFilter === 'ALL') return true;
         if (currentFilter === 'WATCHED' && status === 'WATCHED') return true;
         if (currentFilter === 'DROPPED' && status === 'DROPPED') return true;
@@ -812,6 +824,11 @@ function render() {
         const dateRange = `${formatDate(anime.startDate)} - ${formatDate(anime.endDate)}`;
         const genres = anime.genres.slice(0, 3).map(g => `<span class="genre">${g}</span>`).join('');
 
+        const formatLabelMap = { 'TV': 'TV', 'TV_SHORT': 'TV(短)', 'MOVIE': '映画', 'OVA': 'OVA', 'ONA': 'Web', 'SPECIAL': 'SP', 'MUSIC': 'MV' };
+        const formatLabel = anime.format ? (formatLabelMap[anime.format] || anime.format) : '他';
+        const formatBadgeClass = anime.format ? `format-${anime.format}` : 'format-OTHER';
+        const formatBadge = `<span class="format-badge ${formatBadgeClass}">${formatLabel}</span>`;
+
         // Priority: Wiki (JP via Annict) > Wiki (JP via Guess) > Anilist (EN)
         let summary = anime.description_jp || anime.description || "あらすじ情報なし";
         summary = summary.replace(/<br>/g, ' ').replace(/<[^>]*>/g, '');
@@ -836,6 +853,7 @@ function render() {
             <div class="info-box">
                 <div class="top-row"><h3 class="title">${anime.title.native || anime.title.english}</h3></div>
                 <div class="meta-row">
+                    ${formatBadge}
                     <span class="score-badge">${score}</span>
                     <span class="ep-count">${episodes}</span>
                     <span class="date-range">${dateRange}</span>

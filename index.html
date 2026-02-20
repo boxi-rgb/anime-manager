@@ -64,6 +64,14 @@
             </div>
 
             <div class="options-group">
+                <!-- Format Filter -->
+                <select id="format-select" onchange="setFormatFilter(this.value)">
+                    <option value="ALL">全ての形式</option>
+                    <option value="TV">TVアニメ</option>
+                    <option value="MOVIE">映画 (Movie)</option>
+                    <option value="OTHER">OVA / その他</option>
+                </select>
+
                 <!-- Sort -->
                 <select id="sort-select" onchange="setSort(this.value)">
                     <option value="POPULARITY_DESC">人気順（上から）</option>
