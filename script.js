@@ -483,6 +483,10 @@ async function fetchSeason(season, year, includeAiring) {
                 await enhanceWithWiki(pageAnime, annictWorks);
             }
 
+            // Store original fetch order for ascending popularity sort
+            pageAnime.forEach((anime, index) => {
+                anime._originalIndex = allAnime.length + index;
+            });
             allAnime = [...allAnime, ...pageAnime];
         }
     } catch (e) {
@@ -789,7 +793,9 @@ function render() {
     displayList.sort((a, b) => {
         if (currentSort === 'SCORE_DESC') return (b.averageScore || 0) - (a.averageScore || 0);
         if (currentSort === 'TITLE_ROMAJI') return (a.title.romaji || '').localeCompare(b.title.romaji || '');
-        return 0; // POPULARITY_DESC
+        if (currentSort === 'POPULARITY_ASC') return b._originalIndex - a._originalIndex;
+        // POPULARITY_DESC (default) based on original fetch order
+        return a._originalIndex - b._originalIndex;
     });
 
     if (displayList.length === 0) {

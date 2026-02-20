@@ -79,9 +79,11 @@ header {
     margin-bottom: 15px;
 }
 
-h1 {
-    font-size: 1.8rem;
+.header-top h1 {
     margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
     background: var(--heading-gradient);
     -webkit-background-clip: text;
     background-clip: text;
@@ -675,7 +677,8 @@ select {
     align-items: center;
     gap: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-    visibility: hidden; /* Initial state */
+    visibility: hidden;
+    /* Initial state */
     cursor: pointer;
 }
 
