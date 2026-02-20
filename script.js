@@ -30,31 +30,56 @@ function addDebug(name, info) {
 }
 
 function showDebugModal() {
+    let debugContainer = document.getElementById('debug-output-container');
+
+    // Toggle functionality: if already open, close it
+    if (debugContainer) {
+        document.body.removeChild(debugContainer);
+        return;
+    }
+
     const failures = allAnime.filter(a => !a.description_jp);
     const msg = failures.map(a =>
         `❌ ${a.title.native || a.title.english}\n   WikiKey: ${a._wikiTitle || 'N/A'}\n   Fallback: ${a._fallbackTitle || 'N/A'}`
     ).join('\n\n');
 
     // Output to a dedicated div for automation tools to read easily
-    let debugContainer = document.getElementById('debug-output-container');
-    if (!debugContainer) {
-        debugContainer = document.createElement('pre');
-        debugContainer.id = 'debug-output-container';
-        debugContainer.style.background = '#000';
-        debugContainer.style.color = '#0f0';
-        debugContainer.style.padding = '10px';
-        debugContainer.style.position = 'fixed';
-        debugContainer.style.bottom = '0';
-        debugContainer.style.left = '0';
-        debugContainer.style.right = '0';
-        debugContainer.style.height = '300px';
-        debugContainer.style.overflow = 'auto';
-        debugContainer.style.zIndex = '9999';
-        document.body.appendChild(debugContainer);
-    }
-    debugContainer.textContent = `【未取得リスト: ${failures.length}件】\n\n${msg}`;
-}
+    debugContainer = document.createElement('div');
+    debugContainer.id = 'debug-output-container';
+    debugContainer.style.background = '#000';
+    debugContainer.style.color = '#0f0';
+    debugContainer.style.padding = '10px';
+    debugContainer.style.position = 'fixed';
+    debugContainer.style.bottom = '0';
+    debugContainer.style.left = '0';
+    debugContainer.style.right = '0';
+    debugContainer.style.height = '300px';
+    debugContainer.style.overflow = 'auto';
+    debugContainer.style.zIndex = '9999';
+    debugContainer.style.fontFamily = 'monospace';
 
+    // Add close button inside the modal
+    const closeBtn = document.createElement('button');
+    closeBtn.innerText = '✖ Close Debug';
+    closeBtn.style.position = 'sticky';
+    closeBtn.style.top = '0';
+    closeBtn.style.right = '10px';
+    closeBtn.style.float = 'right';
+    closeBtn.style.padding = '5px 15px';
+    closeBtn.style.background = '#ef4444';
+    closeBtn.style.color = '#fff';
+    closeBtn.style.border = 'none';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.style.fontWeight = 'bold';
+    closeBtn.onclick = () => document.body.removeChild(debugContainer);
+
+    const content = document.createElement('pre');
+    content.textContent = `【未取得リスト: ${failures.length}件】\n\n${msg}`;
+
+    debugContainer.appendChild(closeBtn);
+    debugContainer.appendChild(content);
+    document.body.appendChild(debugContainer);
+}
 
 // --- Modal Logic ---
 let ytPlayer = null;
@@ -713,11 +738,14 @@ async function enhanceWithWiki(anilistAnime, annictWorks) {
 }
 
 // --- Logic & Helpers ---
-function getStatus(id) { return statusMap[id] || 'WATCHING'; }
+function getStatus(id) { return statusMap[id] || null; }
 
 function setStatus(id, status) {
-    if (status === 'WATCHING') delete statusMap[id];
-    else statusMap[id] = status;
+    if (statusMap[id] === status) {
+        delete statusMap[id];
+    } else {
+        statusMap[id] = status;
+    }
     localStorage.setItem('animeStatusMap', JSON.stringify(statusMap));
     unsavedChanges++;
     updateBackupReminder();
@@ -796,9 +824,10 @@ function render() {
         if (currentFormatFilter === 'OTHER' && ['TV', 'TV_SHORT', 'MOVIE'].includes(anime.format)) return false;
 
         if (currentFilter === 'ALL') return true;
+        if (currentFilter === 'PLAN_TO_WATCH' && status === 'PLAN_TO_WATCH') return true;
+        if (currentFilter === 'WATCHING' && status === 'WATCHING') return true;
         if (currentFilter === 'WATCHED' && status === 'WATCHED') return true;
         if (currentFilter === 'DROPPED' && status === 'DROPPED') return true;
-        if (currentFilter === 'WATCHING' && status === 'WATCHING') return true;
         return false;
     });
 
@@ -832,28 +861,40 @@ function render() {
         // Priority: Wiki (JP via Annict) > Wiki (JP via Guess) > Anilist (EN)
         let summary = anime.description_jp || anime.description || "あらすじ情報なし";
         summary = summary.replace(/<br>/g, ' ').replace(/<[^>]*>/g, '');
-        // Truncate if too long?
         if (summary.length > 300) summary = summary.slice(0, 300) + '...';
 
         let itemClass = 'anime-item';
-        let badgeHtml = '';
-        if (status === 'WATCHED') { itemClass += ' status-watched'; badgeHtml = '<div class="status-badge watched">視聴済み</div>'; }
-        if (status === 'DROPPED') { itemClass += ' status-dropped'; badgeHtml = '<div class="status-badge dropped">ゴミ箱</div>'; }
+
+        // Generate distinctive badge for status
+        let statusBadgeHtml = '';
+        if (status === 'WATCHED') statusBadgeHtml = '<div class="status-badge badge-watched">✓ みた</div>';
+        else if (status === 'WATCHING') statusBadgeHtml = '<div class="status-badge badge-watching">▶ みてる</div>';
+        else if (status === 'PLAN_TO_WATCH') statusBadgeHtml = '<div class="status-badge badge-plan">🕒 みる</div>';
+        else if (status === 'DROPPED') statusBadgeHtml = '<div class="status-badge badge-dropped">🗑 みない</div>';
+
+        // Ensure format badge renders alongside status badge
+        const combinedBadges = statusBadgeHtml + formatBadge;
+
+        // Ensure these variables exist for the button classes
+        const planActive = status === 'PLAN_TO_WATCH' ? 'active-plan' : '';
+        const watchingActive = status === 'WATCHING' ? 'active-watching' : '';
         const watchedActive = status === 'WATCHED' ? 'active-watched' : '';
         const droppedActive = status === 'DROPPED' ? 'active-dropped' : '';
 
+        // Added styling hook for the entire card based on status if needed
+        if (status) itemClass += ` status-${status.toLowerCase()}`;
+
         const html = `
-        <div class="${itemClass}" 
-             onmouseenter="setGlobalBg('${anime.coverImage.large}')" 
+        <div class="${itemClass}"
+             onmouseenter="setGlobalBg('${anime.coverImage.large}')"
              onmouseleave="clearGlobalBg()">
-            ${badgeHtml}
             <div class="img-box">
                 <img src="${anime.coverImage.large}" loading="lazy" alt="cover">
             </div>
             <div class="info-box">
                 <div class="top-row"><h3 class="title">${anime.title.native || anime.title.english}</h3></div>
                 <div class="meta-row">
-                    ${formatBadge}
+                    ${combinedBadges}
                     <span class="score-badge">${score}</span>
                     <span class="ep-count">${episodes}</span>
                     <span class="date-range">${dateRange}</span>
@@ -876,11 +917,17 @@ function render() {
                 : ''}
                 </div>
                 <div class="status-btn-group">
-                    <button class="status-btn ${droppedActive}" onclick="setStatus(${anime.id}, '${status === 'DROPPED' ? 'WATCHING' : 'DROPPED'}')">
-                        🗑 みない
+                    <button class="status-btn ${planActive}" onclick="setStatus(${anime.id}, 'PLAN_TO_WATCH')" title="みる">
+                        🕒 みる
                     </button>
-                    <button class="status-btn ${watchedActive}" onclick="setStatus(${anime.id}, '${status === 'WATCHED' ? 'WATCHING' : 'WATCHED'}')">
+                    <button class="status-btn ${watchingActive}" onclick="setStatus(${anime.id}, 'WATCHING')" title="みてる">
+                        ▶ みてる
+                    </button>
+                    <button class="status-btn ${watchedActive}" onclick="setStatus(${anime.id}, 'WATCHED')" title="みた">
                         ✓ みた
+                    </button>
+                    <button class="status-btn ${droppedActive}" onclick="setStatus(${anime.id}, 'DROPPED')" title="みない">
+                        🗑 みない
                     </button>
                 </div>
             </div>
