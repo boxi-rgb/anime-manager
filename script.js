@@ -201,6 +201,7 @@ function setTheme(themeName) {
 function gapiLoaded() {
     gapi.load('client', initializeGapiClient);
 }
+window.gapiLoaded = gapiLoaded;
 
 async function initializeGapiClient() {
     await gapi.client.init({
@@ -210,6 +211,7 @@ async function initializeGapiClient() {
     gapiInited = true;
     maybeEnableButtons();
 }
+window.initializeGapiClient = initializeGapiClient;
 
 function gisLoaded() {
     tokenClient = google.accounts.oauth2.initTokenClient({
@@ -220,6 +222,7 @@ function gisLoaded() {
     gisInited = true;
     maybeEnableButtons();
 }
+window.gisLoaded = gisLoaded;
 
 function maybeEnableButtons() {
     if (gapiInited && gisInited) {
@@ -251,6 +254,7 @@ function handleAuthClick() {
         tokenClient.requestAccessToken({ prompt: '' });
     }
 }
+window.handleAuthClick = handleAuthClick;
 
 function handleSignoutClick() {
     const token = gapi.client.getToken();
