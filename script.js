@@ -228,20 +228,37 @@ async function authCallback(resp) {
     if (resp.error !== undefined) {
         console.warn("Auth Error or Cancel:", resp);
         localStorage.removeItem('googleLoggedIn');
+        sessionStorage.removeItem('googleTokenCache');
         return;
     }
 
     localStorage.setItem('googleLoggedIn', 'true');
+    // Cache the token in sessionStorage (expires when tab closes)
+    const expiry = Date.now() + (resp.expires_in * 1000);
+    sessionStorage.setItem('googleTokenCache', JSON.stringify({
+        access_token: resp.access_token,
+        expiry: expiry
+    }));
+
+    updateAuthUI(true);
+    showToast("Google ログイン中...");
+    await syncWithDrive();
+}
+
+function updateAuthUI(isLoggedIn) {
     const authLabel = document.getElementById('auth-label');
     const authIcon = document.getElementById('auth-icon');
     const authBtn = document.getElementById('auth-btn');
 
-    if (authLabel) authLabel.innerText = 'ログアウト';
-    if (authIcon) authIcon.innerText = '🔓';
-    if (authBtn) authBtn.onclick = handleSignoutClick;
-
-    showToast("Google ログイン中...");
-    await syncWithDrive();
+    if (isLoggedIn) {
+        if (authLabel) authLabel.innerText = 'ログアウト';
+        if (authIcon) authIcon.innerText = '🔓';
+        if (authBtn) authBtn.onclick = handleSignoutClick;
+    } else {
+        if (authLabel) authLabel.innerText = 'Google ログイン';
+        if (authIcon) authIcon.innerText = '🔑';
+        if (authBtn) authBtn.onclick = handleAuthClick;
+    }
 }
 
 function maybeEnableButtons() {
@@ -249,7 +266,17 @@ function maybeEnableButtons() {
         const authBtn = document.getElementById('auth-btn');
         if (authBtn) authBtn.style.visibility = 'visible';
 
-        // Session recovery: if previously logged in, try silent sign-in
+        // Check cache first to avoid flickering
+        const cache = JSON.parse(sessionStorage.getItem('googleTokenCache'));
+        if (cache && cache.expiry > Date.now()) {
+            console.log("Using cached token.");
+            gapi.client.setToken({ access_token: cache.access_token });
+            updateAuthUI(true);
+            syncWithDrive(); // Initial sync with cached token
+            return;
+        }
+
+        // Session recovery: if previously logged in but no cache, try silent sign-in
         if (localStorage.getItem('googleLoggedIn') === 'true' && gapi.client.getToken() === null) {
             console.log("Attempting silent sign-in...");
             tokenClient.requestAccessToken({ prompt: '' });
@@ -258,6 +285,15 @@ function maybeEnableButtons() {
 }
 
 function handleAuthClick() {
+    // Check cache even on click
+    const cache = JSON.parse(sessionStorage.getItem('googleTokenCache'));
+    if (cache && cache.expiry > Date.now()) {
+        gapi.client.setToken({ access_token: cache.access_token });
+        updateAuthUI(true);
+        syncWithDrive();
+        return;
+    }
+
     if (gapi.client.getToken() === null) {
         tokenClient.requestAccessToken({ prompt: 'consent' });
     } else {
@@ -272,13 +308,8 @@ function handleSignoutClick() {
         google.accounts.oauth2.revoke(token.access_token);
         gapi.client.setToken('');
         localStorage.removeItem('googleLoggedIn');
-        const authLabel = document.getElementById('auth-label');
-        const authIcon = document.getElementById('auth-icon');
-        const authBtn = document.getElementById('auth-btn');
-
-        if (authLabel) authLabel.innerText = 'Google ログイン';
-        if (authIcon) authIcon.innerText = '🔑';
-        if (authBtn) authBtn.onclick = handleAuthClick;
+        sessionStorage.removeItem('googleTokenCache');
+        updateAuthUI(false);
         showToast("ログアウトしました");
     }
 }
