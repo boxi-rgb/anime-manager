@@ -1,0 +1,51 @@
+{
+    "status": "complete",
+    "project_type": "brownfield",
+    "current_section": "complete",
+    "current_question": 1,
+    "completed_sections": [
+        "product",
+        "guidelines",
+        "tech_stack",
+        "workflow",
+        "styleguides"
+    ],
+    "answers": {
+        "project_name": "anime-manager",
+        "project_description": "アニメの視聴リストを管理し、各種配信サイトやWikiへのリンクを提供するウェブアプリケーション",
+        "problem_statement": "ブラウザのクリーンアップ等で視聴データ（Local Storage）が消えてしまうことを防ぎ、永続的に管理したい",
+        "target_users": "自分自身（個人用ツールとしての運用）",
+        "key_goals": [
+            "Googleログイン連携によるシームレスなデータ永続化（Google Drive保存）",
+            "AnnictやWiki等の外部APIからの情報自動取得と集約"
+        ],
+        "voice_and_tone": "現在のMidnightテーマを中心とした、ダークかつネオンなグラスモーフィズム・スタイルを維持し、パーソナルな道具感を大切にする",
+        "design_principles": [
+            "データの整合性と信頼性 (消失防止の徹底)",
+            "シンプルさの追求 (直感的な操作性)"
+        ],
+        "tech_stack": {
+            "languages": [
+                "JavaScript (Vanilla)",
+                "HTML",
+                "CSS",
+                "Python"
+            ],
+            "frontend_framework": "なし (Vanilla JS)",
+            "backend_framework": "なし",
+            "database": "Google Drive (JSONファイル同期)",
+            "infrastructure": "GitHub Pages / Local"
+        },
+        "tdd_strictness": "柔軟 (エージェントの判断により、複雑なロジックのみテストを実行)",
+        "commit_strategy": "git-committer スキルによる Conventional Commits (feat:, fix: 等のプレフィックスを使用)",
+        "code_review_policy": "エージェントによるセルフレビューを基本とし、主要な設計変更時のみユーザーに通知する",
+        "verification_checkpoint": "トラック完了時（全ての実装が終わった後）にまとめて手動検証を行う",
+        "styleguides": [
+            "JavaScript",
+            "Python"
+        ]
+    },
+    "files_created": [],
+    "started_at": "2026-02-20T20:22:30+09:00",
+    "last_updated": "2026-02-20T20:38:00+09:00"
+}

@@ -1,0 +1,16 @@
+{
+    "id": "google-drive-persistence_20260220",
+    "title": "Google Drive Persistence",
+    "type": "feature",
+    "status": "completed",
+    "created": "2026-02-20T20:53:00Z",
+    "updated": "2026-02-20T21:00:00Z",
+    "phases": {
+        "total": 3,
+        "completed": 3
+    },
+    "tasks": {
+        "total": 9,
+        "completed": 9
+    }
+}

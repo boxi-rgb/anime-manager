@@ -62,7 +62,6 @@
             </div>
 
             <div class="options-group">
-                <button class="icon-btn settings-btn" onclick="openSettings()" title="設定">⚙</button>
                 <!-- Sort -->
                 <select id="sort-select" onchange="setSort(this.value)">
                     <option value="POPULARITY_DESC">人気順</option>
@@ -87,6 +86,13 @@
                     <input type="checkbox" id="hide-kids-check" onchange="toggleKidsFilter(this.checked)">
                     子供向けを非表示
                 </label>
+
+                <!-- Google Auth -->
+                <div class="auth-box">
+                    <button id="auth-btn" class="icon-btn google-btn" onclick="handleAuthClick()">
+                        <span id="auth-icon">🔑</span> <span id="auth-label">Google ログイン</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
@@ -95,23 +101,10 @@
         <!-- JS Populated -->
     </div>
 
-    <div id="settings-modal" class="modal-overlay">
-        <div class="modal-content settings-modal-content">
-            <button class="modal-close" onclick="closeSettings()">×</button>
-            <h2>設定</h2>
-            <div class="settings-group">
-                <label for="annict-token-input">Annict API トークン</label>
-                <input type="password" id="annict-token-input" placeholder="Annictのアクセストークンを入力">
-                <p class="hint">
-                    Annictの<a href="https://annict.com/settings/apps" target="_blank">個人用アクセストークン</a>を取得して入力してください。<br>
-                    これがないと一部の作品情報（Wiki連携など）が取得できません。
-                </p>
-            </div>
-            <div class="settings-actions">
-                <button class="save-btn" onclick="saveSettings()">保存して再読み込み</button>
-            </div>
-        </div>
-    </div>
+    <!-- Google Scripts -->
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+    <script src="config.js"></script>
     <script src="script.js"></script>
 </body>
 

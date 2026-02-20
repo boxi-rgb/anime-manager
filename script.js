@@ -1,7 +1,7 @@
 // --- Configuration ---
 const ANILIST_API_URL = 'https://graphql.anilist.co';
 const ANNICT_API_URL = 'https://api.annict.com/v1/works';
-let ANNICT_TOKEN = localStorage.getItem('annictToken') || ''; // Provided by User
+const ANNICT_TOKEN = 'KEgdY8ZMjgK3kr5zofuAk6yVrtn7JaRknneSHZLjjow'; // Provided by User
 
 // --- State ---
 let allAnime = [];
@@ -11,6 +11,12 @@ let unsavedChanges = 0; // Track changes for backup reminder
 let currentFilter = 'ALL';
 let currentSort = 'POPULARITY_DESC';
 let hideKids = false;
+
+// --- Google Auth State ---
+let tokenClient;
+let gapiInited = false;
+let gisInited = false;
+let googleDriveFileId = null; // Store the ID of anime_data.json on Drive
 
 // --- Initialization ---
 const root = document.getElementById('anime-list-root');
@@ -26,63 +32,29 @@ function addDebug(name, info) {
 function showDebugModal() {
     const failures = allAnime.filter(a => !a.description_jp);
     const msg = failures.map(a =>
-        `❌ ${a.title.native || a.title.english}
-   WikiKey: ${a._wikiTitle || 'N/A'}
-   Fallback: ${a._fallbackTitle || 'N/A'}`
+        `❌ ${a.title.native || a.title.english}\n   WikiKey: ${a._wikiTitle || 'N/A'}\n   Fallback: ${a._fallbackTitle || 'N/A'}`
     ).join('\n\n');
 
-    let container = document.getElementById('debug-modal-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'debug-modal-container';
-        Object.assign(container.style, {
-            position: 'fixed', top: '10%', left: '10%', width: '80%', height: '80%',
-            background: '#000', color: '#0f0', zIndex: '10000',
-            border: '2px solid #333', display: 'flex', flexDirection: 'column',
-            boxShadow: '0 0 20px rgba(0,255,0,0.2)'
-        });
-
-        const header = document.createElement('div');
-        Object.assign(header.style, {
-            padding: '10px', background: '#111', borderBottom: '1px solid #333',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-        });
-
-        const title = document.createElement('span');
-        title.textContent = 'Debug Output';
-        title.style.fontWeight = 'bold';
-
-        const closeBtn = document.createElement('button');
-        closeBtn.textContent = '✕ Close';
-        Object.assign(closeBtn.style, {
-            background: '#333', color: '#fff', border: 'none',
-            padding: '5px 10px', cursor: 'pointer'
-        });
-        closeBtn.onclick = () => container.remove();
-
-        header.appendChild(title);
-        header.appendChild(closeBtn);
-
-        const body = document.createElement('pre');
-        body.id = 'debug-modal-body';
-        Object.assign(body.style, {
-            flex: '1', overflow: 'auto', padding: '10px', margin: '0',
-            whiteSpace: 'pre-wrap', fontFamily: 'monospace'
-        });
-
-        container.appendChild(header);
-        container.appendChild(body);
-        document.body.appendChild(container);
-    } else {
-        // Ensure it is visible/re-appended if needed (simple toggle logic usually removes it)
-        if (!document.body.contains(container)) document.body.appendChild(container);
+    // Output to a dedicated div for automation tools to read easily
+    let debugContainer = document.getElementById('debug-output-container');
+    if (!debugContainer) {
+        debugContainer = document.createElement('pre');
+        debugContainer.id = 'debug-output-container';
+        debugContainer.style.background = '#000';
+        debugContainer.style.color = '#0f0';
+        debugContainer.style.padding = '10px';
+        debugContainer.style.position = 'fixed';
+        debugContainer.style.bottom = '0';
+        debugContainer.style.left = '0';
+        debugContainer.style.right = '0';
+        debugContainer.style.height = '300px';
+        debugContainer.style.overflow = 'auto';
+        debugContainer.style.zIndex = '9999';
+        document.body.appendChild(debugContainer);
     }
-
-    const body = container.querySelector('#debug-modal-body');
-    if (body) body.textContent = `【未取得リスト: ${failures.length}件】
-
-${msg}`;
+    debugContainer.textContent = `【未取得リスト: ${failures.length}件】\n\n${msg}`;
 }
+
 
 // --- Modal Logic ---
 let ytPlayer = null;
@@ -214,11 +186,158 @@ function init() {
     const savedTheme = localStorage.getItem('theme') || 'midnight';
     setTheme(savedTheme);
     document.getElementById('theme-select').value = savedTheme;
+
+    // Safety check: if SDKs loaded before script.js
+    if (typeof gapi !== 'undefined' && !gapiInited) gapiLoaded();
+    if (typeof google !== 'undefined' && typeof google.accounts !== 'undefined' && !gisInited) gisLoaded();
 }
 
 function setTheme(themeName) {
     document.body.setAttribute('data-theme', themeName);
     localStorage.setItem('theme', themeName);
+}
+
+// --- Google Drive Auth & Init ---
+function gapiLoaded() {
+    gapi.load('client', initializeGapiClient);
+}
+
+async function initializeGapiClient() {
+    await gapi.client.init({
+        apiKey: '', // Drive API doesn't strictly need apiKey for access_token based file access, but good to have if needed
+        discoveryDocs: CONFIG.DISCOVERY_DOCS,
+    });
+    gapiInited = true;
+    maybeEnableButtons();
+}
+
+function gisLoaded() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CONFIG.GOOGLE_CLIENT_ID,
+        scope: CONFIG.SCOPES,
+        callback: '', // defined later in handleAuthClick
+    });
+    gisInited = true;
+    maybeEnableButtons();
+}
+
+function maybeEnableButtons() {
+    if (gapiInited && gisInited) {
+        const authBtn = document.getElementById('auth-btn');
+        if (authBtn) authBtn.style.visibility = 'visible';
+    }
+}
+
+function handleAuthClick() {
+    tokenClient.callback = async (resp) => {
+        if (resp.error !== undefined) {
+            throw (resp);
+        }
+        document.getElementById('auth-label').innerText = 'ログアウト';
+        document.getElementById('auth-icon').innerText = '🔓';
+        document.getElementById('auth-btn').onclick = handleSignoutClick;
+        showToast("Google ログイン完了");
+
+        // Phase 2 path: Load data from Drive
+        await syncWithDrive();
+    };
+
+    if (gapi.client.getToken() === null) {
+        // Prompt the user to select a Google Account and ask for consent to share their data
+        // when establishing a new session.
+        tokenClient.requestAccessToken({ prompt: 'consent' });
+    } else {
+        // Skip display of account chooser and consent pane for an existing session.
+        tokenClient.requestAccessToken({ prompt: '' });
+    }
+}
+
+function handleSignoutClick() {
+    const token = gapi.client.getToken();
+    if (token !== null) {
+        google.accounts.oauth2.revoke(token.access_token);
+        gapi.client.setToken('');
+        document.getElementById('auth-label').innerText = 'Google ログイン';
+        document.getElementById('auth-icon').innerText = '🔑';
+        document.getElementById('auth-btn').onclick = handleAuthClick;
+        showToast("ログアウトしました");
+    }
+}
+
+async function syncWithDrive() {
+    statusDiv.textContent = "Google Driveと同期中...";
+    try {
+        googleDriveFileId = await findOrCreateFile();
+        const driveData = await loadFromDrive(googleDriveFileId);
+
+        if (driveData) {
+            // Merge strategy: Drive data wins for existing keys
+            statusMap = { ...statusMap, ...driveData };
+            localStorage.setItem('animeStatusMap', JSON.stringify(statusMap));
+            render();
+            showToast("Driveからデータを読み込みました");
+        } else {
+            // First time sync? Save current local data to Drive
+            await saveToDrive();
+            showToast("Driveに初期データを保存しました");
+        }
+    } catch (err) {
+        console.error("Sync Error", err);
+        showToast("Driveとの同期に失敗しました");
+    } finally {
+        statusDiv.textContent = "同期完了";
+    }
+}
+
+async function findOrCreateFile() {
+    const fileName = 'anime_data.json';
+    let response = await gapi.client.drive.files.list({
+        q: `name = '${fileName}' and trashed = false`,
+        fields: 'files(id, name)',
+    });
+
+    let files = response.result.files;
+    if (files.length > 0) {
+        return files[0].id;
+    } else {
+        // Create file
+        const metadata = {
+            name: fileName,
+            mimeType: 'application/json',
+        };
+        const res = await gapi.client.drive.files.create({
+            resource: metadata,
+            fields: 'id',
+        });
+        return res.result.id;
+    }
+}
+
+async function loadFromDrive(fileId) {
+    const response = await gapi.client.drive.files.get({
+        fileId: fileId,
+        alt: 'media',
+    });
+    return response.result;
+}
+
+async function saveToDrive() {
+    if (!googleDriveFileId) return;
+
+    const content = JSON.stringify(statusMap);
+    try {
+        await gapi.client.request({
+            path: `/upload/drive/v3/files/${googleDriveFileId}`,
+            method: 'PATCH',
+            params: { uploadType: 'media' },
+            body: content,
+        });
+        unsavedChanges = 0;
+        updateBackupReminder();
+    } catch (err) {
+        console.error("Save to Drive Error", err);
+        showToast("Driveへの保存に失敗しました");
+    }
 }
 
 // --- Data Fetching Logic (Hybrid: Anilist + Annict + Wiki) ---
@@ -547,6 +666,12 @@ function setStatus(id, status) {
     localStorage.setItem('animeStatusMap', JSON.stringify(statusMap));
     unsavedChanges++;
     updateBackupReminder();
+
+    // Auto-save to Drive if logged in
+    if (gapi.client.getToken() !== null) {
+        saveToDrive();
+    }
+
     showToast("保存しました");
     render();
 }
@@ -712,35 +837,3 @@ function clearGlobalBg() {
 }
 
 init();
-
-// --- Settings Modal Logic ---
-function openSettings() {
-    const modal = document.getElementById('settings-modal');
-    const input = document.getElementById('annict-token-input');
-    if (modal && input) {
-        input.value = ANNICT_TOKEN;
-        modal.classList.add('active');
-
-        // Close on background click
-        modal.onclick = (e) => {
-            if (e.target === modal) closeSettings();
-        };
-    }
-}
-
-function closeSettings() {
-    const modal = document.getElementById('settings-modal');
-    if (modal) modal.classList.remove('active');
-}
-
-function saveSettings() {
-    const input = document.getElementById('annict-token-input');
-    if (input) {
-        const token = input.value.trim();
-        localStorage.setItem('annictToken', token);
-        ANNICT_TOKEN = token;
-        closeSettings();
-        showToast("設定を保存しました。リロードします...");
-        setTimeout(() => location.reload(), 800);
-    }
-}
