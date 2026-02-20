@@ -228,18 +228,26 @@ function maybeEnableButtons() {
     if (gapiInited && gisInited) {
         const authBtn = document.getElementById('auth-btn');
         if (authBtn) authBtn.style.visibility = 'visible';
+
+        // Session recovery: if previously logged in, try silent sign-in
+        if (localStorage.getItem('googleLoggedIn') === 'true' && gapi.client.getToken() === null) {
+            tokenClient.requestAccessToken({ prompt: '' });
+        }
     }
 }
 
 function handleAuthClick() {
     tokenClient.callback = async (resp) => {
         if (resp.error !== undefined) {
+            // If silent sign-in fails or user cancels, clear flag
+            localStorage.removeItem('googleLoggedIn');
             throw (resp);
         }
+        localStorage.setItem('googleLoggedIn', 'true');
         document.getElementById('auth-label').innerText = 'ログアウト';
         document.getElementById('auth-icon').innerText = '🔓';
         document.getElementById('auth-btn').onclick = handleSignoutClick;
-        showToast("Google ログイン完了");
+        showToast("Google ログイン中");
 
         // Phase 2 path: Load data from Drive
         await syncWithDrive();
@@ -261,6 +269,7 @@ function handleSignoutClick() {
     if (token !== null) {
         google.accounts.oauth2.revoke(token.access_token);
         gapi.client.setToken('');
+        localStorage.removeItem('googleLoggedIn'); // Clear session flag
         document.getElementById('auth-label').innerText = 'Google ログイン';
         document.getElementById('auth-icon').innerText = '🔑';
         document.getElementById('auth-btn').onclick = handleAuthClick;
